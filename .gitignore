@@ -1,0 +1,40 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+
+# iOS
+ios/.symlinks/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Android
+android/.gradle/
+android/local.properties
+android/gradle.properties
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+
+# Example app
+example/.dart_tool/
+example/.packages
+example/build/
+example/pubspec.lock
+example/ios/.symlinks/
+example/ios/Flutter/Generated.xcconfig
+example/ios/Flutter/flutter_export_environment.sh
+example/ios/Runner/GeneratedPluginRegistrant.*
+example/android/.gradle/
+example/android/local.properties
+example/android/gradle.properties
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# macOS
+.DS_Store
+EOF < /dev/null
