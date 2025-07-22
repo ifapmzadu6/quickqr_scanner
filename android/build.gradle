@@ -48,8 +48,8 @@ android {
     }
 
     dependencies {
-        // Flutter
-        compileOnly 'io.flutter:flutter_embedding_android:1.0.0-3316dd718d'
+        // Flutter - standard plugin dependency
+        compileOnly 'io.flutter:flutter_embedding_android:+'
         
         // ML Kit for barcode scanning
         implementation 'com.google.mlkit:barcode-scanning:17.2.0'
