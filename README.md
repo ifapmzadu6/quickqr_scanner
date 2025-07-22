@@ -1,6 +1,6 @@
-# QuickQR Scanner Pro
+# QuickQR Scanner Plugin
 
-[![pub package](https://img.shields.io/pub/v/quickqr_scanner_pro.svg)](https://pub.dev/packages/quickqr_scanner_pro)
+[![pub package](https://img.shields.io/pub/v/quickqr_scanner_plugin.svg)](https://pub.dev/packages/quickqr_scanner_plugin)
 [![Platform](https://img.shields.io/badge/platform-flutter-blue.svg)](https://flutter.dev)
 [![iOS](https://img.shields.io/badge/iOS-12.0+-blue.svg)](https://developer.apple.com)
 [![Android](https://img.shields.io/badge/Android-21+-green.svg)](https://developer.android.com)

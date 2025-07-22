@@ -1,9 +1,9 @@
-name: quickqr_scanner
+name: quickqr_scanner_plugin
 description: "High-performance QR scanner with VisionKit integration and image processing capabilities."
 version: 0.1.0
-homepage: https://github.com/quickqr/quickqr_scanner
-repository: https://github.com/quickqr/quickqr_scanner
-issue_tracker: https://github.com/quickqr/quickqr_scanner/issues
+homepage: https://github.com/ifapmzadu6/quickqr_scanner_plugin
+repository: https://github.com/ifapmzadu6/quickqr_scanner_plugin
+issue_tracker: https://github.com/ifapmzadu6/quickqr_scanner_plugin/issues
 topics:
   - qr-code
   - barcode
