@@ -1,5 +1,5 @@
-group = "com.example.quickqr_scanner_pro"
-version = "1.0-SNAPSHOT"
+group = "com.example.quickqr_scanner_plugin"
+version = "1.0.0"
 
 buildscript {
     ext.kotlin_version = "2.1.0"
@@ -25,7 +25,7 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
 android {
-    namespace = "com.example.quickqr_scanner_pro"
+    namespace = "com.example.quickqr_scanner_plugin"
 
     compileSdk = 35
 
@@ -49,7 +49,7 @@ android {
 
     dependencies {
         // Flutter
-        implementation 'io.flutter:flutter_embedding_android:+'
+        compileOnly 'io.flutter:flutter_embedding_android:1.0.0-3316dd718d'
         
         // ML Kit for barcode scanning
         implementation 'com.google.mlkit:barcode-scanning:17.2.0'

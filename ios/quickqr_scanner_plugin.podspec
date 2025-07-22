@@ -3,15 +3,15 @@
 # Run `pod lib lint quickqr_scanner.podspec` to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'quickqr_scanner'
-  s.version          = '0.0.1'
-  s.summary          = 'A new Flutter plugin project.'
+  s.name             = 'quickqr_scanner_plugin'
+  s.version          = '1.0.0'
+  s.summary          = 'High-performance QR scanner with VisionKit integration'
   s.description      = <<-DESC
-A new Flutter plugin project.
+QuickQR Scanner Plugin provides high-performance QR code scanning with VisionKit integration and advanced image processing capabilities.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/ifapmzadu6/quickqr_scanner_plugin'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'QuickQR' => 'quickqr@example.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
