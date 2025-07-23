@@ -5,9 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2025-01-22
+## [1.0.2] - 2025-07-22
 
-### 🎉 Initial Release
+### 🐛 Bug Fixes
+
+#### Android Platform
+- **SurfaceTextureListener Fix**: Fixed `onSurfaceTextureSizeChanged` return type from `Boolean` to `Unit` to match Android API requirements
+- **Build Compatibility**: Resolved Kotlin compilation error that prevented Android APK builds
+- **Type Safety**: Improved type conformance with Android TextureView.SurfaceTextureListener interface
+
+#### 📋 What's Fixed
+- Android APK builds now complete successfully without compilation errors
+- Proper implementation of SurfaceTextureListener callbacks
+- Better compatibility with latest Android SDK versions
+
+## [1.0.1] - 2025-07-22
+
+### 📝 Documentation Improvements
+
+#### ✨ Enhanced
+- **onQRDetected Stream Documentation**: Added comprehensive documentation for the `onQRDetected` stream with detailed usage examples, error handling patterns, and multiple listener examples
+- **API Reference**: Enhanced API documentation with broadcast stream behavior, memory management guidelines, and advanced usage patterns
+
+#### 🌍 Internationalization
+- **Example App**: Replaced all Japanese text with English in example application for better international accessibility
+- **Code Samples**: Updated all code samples in documentation to use English text
+- **README**: Improved sample code clarity and added important notes about memory management
+
+#### 📋 What's Improved
+- Clear explanation of stream lifecycle and behavior
+- Multiple real-world usage examples with error handling
+- Memory leak prevention guidelines
+- Broadcast stream pattern documentation
+- Better tooltips and UI text in example app
+
+## [1.0.0] - 2025-07-22
+
+### 🎉 Production Release
+
+First stable release of QuickQR Scanner Plugin with enterprise-grade features.
 
 #### ✨ Features
 
@@ -32,8 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### 📱 Platform Support
 
-- **iOS**: 12.0+ with VisionKit and AVFoundation integration
-- **Android**: API Level 21+ with ML Kit and Camera2 API support
+- **iOS**: 12.0+ with Vision and AVFoundation integration (hardware acceleration on supported devices)  
+- **Android**: API Level 21+ with ML Kit and Camera2 API support (Google ML optimization)
 
 #### 🎯 Performance Optimizations
 
@@ -79,7 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ```dart
 // Basic usage
-final scanner = QuickQRScannerPro.instance;
+final scanner = QuickqrScannerPlugin();
 await scanner.initialize();
 scanner.onQRDetected.listen((result) {
   print('QR: ${result.content}');
@@ -111,16 +147,16 @@ Planned features for v0.2.0:
 To update to the latest version:
 
 ```bash
-flutter pub upgrade quickqr_scanner_pro
+flutter pub upgrade quickqr_scanner_plugin
 ```
 
 ## Migration Guide
 
-Since this is the initial release, no migration is required.
+Since this is the first production release, no migration is required for new implementations.
 
 ## Support
 
 - 📖 [Documentation](README.md)
-- 🐛 [Issues](https://github.com/quickqr/quickqr_scanner_pro/issues)
-- 💬 [Discussions](https://github.com/quickqr/quickqr_scanner_pro/discussions)
-- 📧 Support: quickqr.scanner.pro@gmail.com
+- 🐛 [Issues](https://github.com/ifapmzadu6/quickqr_scanner_plugin/issues)
+- 💬 [Discussions](https://github.com/ifapmzadu6/quickqr_scanner_plugin/discussions)
+- 📧 Support: Create an issue on GitHub for technical support

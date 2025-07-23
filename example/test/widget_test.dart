@@ -8,20 +8,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:quickqr_scanner_pro_example/main.dart';
+import 'package:quickqr_scanner_plugin_example/main.dart';
 
 void main() {
-  testWidgets('Verify Platform version', (WidgetTester tester) async {
+  testWidgets('Verify QuickQR Scanner app loads correctly', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
 
-    // Verify that platform version is retrieved.
+    // Wait for the widget to load
+    await tester.pumpAndSettle();
+
+    // Verify that the main components are present
+    expect(find.text('QuickQR Scanner'), findsOneWidget);
+    expect(find.text('Status'), findsOneWidget);
+    expect(find.text('Initialize'), findsOneWidget);
+    expect(find.text('Start Scan'), findsOneWidget);
+    expect(find.text('Stop'), findsOneWidget);
+    
+    // Verify status message appears
+    expect(
+      find.byWidgetPredicate(
+        (Widget widget) => widget is Text && 
+                           (widget.data?.contains('initialize') == true ||
+                            widget.data?.contains('compatible') == true ||
+                            widget.data?.contains('check') == true),
+      ),
+      findsAtLeastNWidgets(1),
+    );
+  });
+
+  testWidgets('Verify scan results section exists', (WidgetTester tester) async {
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    // Check for scan results section
     expect(
       find.byWidgetPredicate(
         (Widget widget) => widget is Text &&
-                           widget.data!.startsWith('Running on:'),
+                           widget.data != null &&
+                           widget.data!.contains('Scan Results'),
       ),
       findsOneWidget,
     );
+    
+    // Check for "Please scan a QR code" placeholder
+    expect(find.text('Please scan a QR code'), findsOneWidget);
   });
 }

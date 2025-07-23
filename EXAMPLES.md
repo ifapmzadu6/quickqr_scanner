@@ -1,6 +1,6 @@
 # Examples
 
-Comprehensive examples for using QuickQR Scanner Pro in various scenarios.
+Comprehensive examples for using QuickQR Scanner Plugin in various scenarios.
 
 ## 📋 Table of Contents
 
@@ -18,7 +18,7 @@ Comprehensive examples for using QuickQR Scanner Pro in various scenarios.
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:quickqr_scanner_pro/quickqr_scanner_pro.dart';
+import 'package:quickqr_scanner_plugin/quickqr_scanner_plugin.dart';
 import 'dart:async';
 
 class SimpleQRScanner extends StatefulWidget {
@@ -27,7 +27,7 @@ class SimpleQRScanner extends StatefulWidget {
 }
 
 class _SimpleQRScannerState extends State<SimpleQRScanner> {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   StreamSubscription<QRScanResult>? _subscription;
   String _lastResult = 'No QR code scanned';
 
@@ -84,7 +84,7 @@ class PermissionAwareScanner extends StatefulWidget {
 }
 
 class _PermissionAwareScannerState extends State<PermissionAwareScanner> {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   String _status = 'Checking permissions...';
 
   @override
@@ -167,7 +167,7 @@ class AdvancedQRScanner extends StatefulWidget {
 }
 
 class _AdvancedQRScannerState extends State<AdvancedQRScanner> {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   StreamSubscription<QRScanResult>? _subscription;
   bool _multiScanEnabled = false;
   List<String> _enabledFormats = ['qr'];
@@ -258,7 +258,7 @@ class MultiFormatScanner extends StatefulWidget {
 }
 
 class _MultiFormatScannerState extends State<MultiFormatScanner> {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   Map<String, List<QRScanResult>> _resultsByFormat = {};
 
   @override
@@ -334,7 +334,7 @@ class BatchImageScanner extends StatefulWidget {
 }
 
 class _BatchImageScannerState extends State<BatchImageScanner> {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   List<String> _imagePaths = [];
   Map<String, QRScanResult?> _results = {};
   bool _processing = false;
@@ -447,7 +447,7 @@ class QualityAwareImageScanner extends StatefulWidget {
 }
 
 class _QualityAwareImageScannerState extends State<QualityAwareImageScanner> {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
 
   Future<void> _scanWithQualityCheck(String imagePath) async {
     // First check image properties
@@ -597,7 +597,7 @@ class RobustQRScanner extends StatefulWidget {
 
 class _RobustQRScannerState extends State<RobustQRScanner> 
     with WidgetsBindingObserver {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   StreamSubscription<QRScanResult>? _subscription;
   String _status = 'Initializing...';
   int _retryCount = 0;
@@ -878,7 +878,7 @@ class CustomOverlayScanner extends StatefulWidget {
 
 class _CustomOverlayScannerState extends State<CustomOverlayScanner>
     with TickerProviderStateMixin {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   late AnimationController _scanLineController;
   late Animation<double> _scanLineAnimation;
   bool _flashEnabled = false;
@@ -1130,7 +1130,7 @@ class OptimizedQRScanner extends StatefulWidget {
 
 class _OptimizedQRScannerState extends State<OptimizedQRScanner>
     with WidgetsBindingObserver {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   StreamSubscription<QRScanResult>? _subscription;
   Timer? _cooldownTimer;
   
@@ -1394,7 +1394,7 @@ class QRScannerService {
   factory QRScannerService() => _instance;
   QRScannerService._internal();
 
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   final _resultController = StreamController<QRScanResult>.broadcast();
   final _statusController = StreamController<ScannerStatus>.broadcast();
   
@@ -1822,4 +1822,4 @@ class QRScannerError extends QRScannerState {
 
 For more detailed information about specific methods and classes, see the [API Reference](API_REFERENCE.md).
 
-These examples demonstrate various usage patterns and best practices for integrating QuickQR Scanner Pro into your Flutter applications. Choose the patterns that best fit your application's architecture and requirements.
+These examples demonstrate various usage patterns and best practices for integrating QuickQR Scanner Plugin into your Flutter applications. Choose the patterns that best fit your application's architecture and requirements.

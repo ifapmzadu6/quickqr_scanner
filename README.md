@@ -4,27 +4,28 @@
 [![Platform](https://img.shields.io/badge/platform-flutter-blue.svg)](https://flutter.dev)
 [![iOS](https://img.shields.io/badge/iOS-12.0+-blue.svg)](https://developer.apple.com)
 [![Android](https://img.shields.io/badge/Android-21+-green.svg)](https://developer.android.com)
+[![Flutter](https://img.shields.io/badge/Flutter-3.16+-02569B.svg)](https://flutter.dev)
 
-Enterprise-grade QR code and barcode scanner plugin for Flutter with VisionKit integration and advanced image processing capabilities.
+Enterprise-grade QR code and barcode scanner plugin for Flutter with native Vision framework integration for iOS and ML Kit for Android. Designed for production apps requiring high-performance, low-latency scanning with comprehensive error handling.
 
 ## 🌟 Features
 
-- **Real-time QR/Barcode scanning** using device camera
-- **Image-based scanning** from files (no image picker dependency)
-- **VisionKit integration** for iOS (high performance, system UI)
-- **ML Kit integration** for Android (Google's machine learning)
-- **Multiple barcode formats**: QR Code, Code 128, Code 39, EAN-13, EAN-8, UPC-E
-- **Enterprise-grade error handling** with detailed status reporting
-- **Flashlight control** for low-light scanning
-- **Permission management** with clear user guidance
-- **Minimal dependencies** - no heavy image processing libraries
+- **Native Performance**: Vision framework (iOS) + ML Kit (Android) for optimal speed
+- **Real-time Scanning**: Live camera scanning with sub-second detection
+- **Platform Views**: Native camera integration with Flutter UI overlay
+- **Enterprise Error Handling**: Comprehensive status reporting and recovery
+- **Image Processing**: Advanced quality analysis and enhancement
+- **Multiple Formats**: QR Code, Code 128, Code 39, EAN-13, EAN-8, UPC-E
+- **Permission Management**: Graceful camera permission handling
+- **Resource Management**: Proper cleanup and memory management
+- **Minimal Dependencies**: Lightweight with essential libraries only
 
 ## 📱 Supported Platforms
 
-| Platform | Version | Framework |
-|----------|---------|-----------|
-| iOS      | 12.0+   | VisionKit + AVFoundation |
-| Android  | API 21+ | ML Kit Barcode Scanning |
+| Platform | Version | Framework | Performance |
+|----------|---------|-----------|------------|
+| iOS      | 12.0+   | Vision + AVFoundation | Hardware acceleration on supported devices |
+| Android  | API 21+ | ML Kit + Camera2 API | Google ML optimization |
 
 ## 🚀 Installation
 
@@ -32,7 +33,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  quickqr_scanner_pro: ^0.1.0
+  quickqr_scanner_plugin: ^1.0.0
 ```
 
 Then run:
@@ -64,7 +65,7 @@ Add camera permission to `android/app/src/main/AndroidManifest.xml`:
 ### Basic Usage
 
 ```dart
-import 'package:quickqr_scanner_pro/quickqr_scanner_pro.dart';
+import 'package:quickqr_scanner_plugin/quickqr_scanner_plugin.dart';
 
 class QRScannerPage extends StatefulWidget {
   @override
@@ -72,7 +73,7 @@ class QRScannerPage extends StatefulWidget {
 }
 
 class _QRScannerPageState extends State<QRScannerPage> {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   StreamSubscription<QRScanResult>? _subscription;
 
   @override
@@ -127,7 +128,8 @@ class _QRScannerPageState extends State<QRScannerPage> {
 ```dart
 // Scan QR code from image file
 Future<void> scanFromImage(String imagePath) async {
-  final result = await QuickQRScannerPro.instance.scanFromImage(imagePath);
+  final scanner = QuickqrScannerPlugin();
+  final result = await scanner.scanFromImage(imagePath);
   if (result != null) {
     print('QR Code: ${result.content}');
     print('Format: ${result.format}');
@@ -139,14 +141,17 @@ Future<void> scanFromImage(String imagePath) async {
 
 ## 📖 API Reference
 
-### QuickQRScannerPro
+### QuickqrScannerPlugin
 
 Main plugin class providing QR scanning functionality.
 
 #### Properties
 
 - `static instance` - Singleton instance
-- `onQRDetected` - Stream of scan results
+- `onQRDetected` - **Broadcast Stream<QRScanResult>** for real-time scan results
+  - Emits QR/barcode detection events during active scanning
+  - Supports multiple listeners with automatic error recovery
+  - **⚠️ Remember to cancel subscriptions in `dispose()` to prevent memory leaks**
 
 #### Methods
 
@@ -274,7 +279,7 @@ Enable detailed logging in debug builds:
 // Add to main.dart for debugging
 void main() {
   if (kDebugMode) {
-    print('QuickQR Scanner Pro Debug Mode Enabled');
+    print('QuickQR Scanner Plugin Debug Mode Enabled');
   }
   runApp(MyApp());
 }
@@ -292,8 +297,8 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 
 - **Documentation**: [API Reference](API_REFERENCE.md)
 - **Examples**: [More Examples](EXAMPLES.md)
-- **Issues**: [GitHub Issues](https://github.com/quickqr/quickqr_scanner_pro/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/quickqr/quickqr_scanner_pro/discussions)
+- **Issues**: [GitHub Issues](https://github.com/ifapmzadu6/quickqr_scanner_plugin/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/ifapmzadu6/quickqr_scanner_plugin/discussions)
 
 ---
 

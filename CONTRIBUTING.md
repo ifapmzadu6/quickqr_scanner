@@ -1,6 +1,6 @@
-# Contributing to QuickQR Scanner Pro
+# Contributing to QuickQR Scanner Plugin
 
-Thank you for your interest in contributing to QuickQR Scanner Pro! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to QuickQR Scanner Plugin! This document provides guidelines and information for contributors.
 
 ## 📋 Table of Contents
 
@@ -97,8 +97,8 @@ We welcome code contributions! Areas where help is needed:
 
 1. **Fork and clone** the repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/quickqr_scanner_pro.git
-   cd quickqr_scanner_pro
+   git clone https://github.com/YOUR_USERNAME/quickqr_scanner_plugin.git
+   cd quickqr_scanner_plugin
    ```
 
 2. **Install dependencies**:
@@ -133,20 +133,20 @@ We welcome code contributions! Areas where help is needed:
 ## 📁 Project Structure
 
 ```
-quickqr_scanner_pro/
+quickqr_scanner_plugin/
 ├── lib/                          # Dart plugin code
 │   ├── src/
 │   │   ├── models/              # Data models
 │   │   │   ├── qr_scan_result.dart
 │   │   │   ├── qr_scan_config.dart
 │   │   │   └── scanner_exception.dart
-│   ├── quickqr_scanner_pro.dart # Main plugin API
-│   ├── quickqr_scanner_pro_platform_interface.dart
-│   └── quickqr_scanner_pro_method_channel.dart
+│   ├── quickqr_scanner_plugin.dart # Main plugin API
+│   ├── quickqr_scanner_plugin_platform_interface.dart
+│   └── quickqr_scanner_plugin_method_channel.dart
 ├── ios/                          # iOS native code
 │   ├── Classes/
 │   │   └── QuickqrScannerProPlugin.swift
-│   └── quickqr_scanner_pro.podspec
+│   └── quickqr_scanner_plugin.podspec
 ├── android/                      # Android native code
 │   └── src/main/kotlin/
 │       └── QuickqrScannerProPlugin.kt
@@ -159,7 +159,7 @@ quickqr_scanner_pro/
 
 ### Key Files
 
-- **`lib/quickqr_scanner_pro.dart`**: Main plugin API
+- **`lib/quickqr_scanner_plugin.dart`**: Main plugin API
 - **`ios/Classes/QuickqrScannerProPlugin.swift`**: iOS implementation
 - **`android/.../QuickqrScannerProPlugin.kt`**: Android implementation
 - **`example/lib/main.dart`**: Example app demonstrating usage
@@ -258,7 +258,7 @@ Future<QRScanResult?> scanFromImage(String imagePath);
 flutter test
 
 # Run specific test file
-flutter test test/quickqr_scanner_pro_test.dart
+flutter test test/quickqr_scanner_plugin_test.dart
 
 # Run with coverage
 flutter test --coverage
@@ -275,7 +275,7 @@ genhtml coverage/lcov.info -o coverage/html
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quickqr_scanner_pro/quickqr_scanner_pro.dart';
+import 'package:quickqr_scanner_plugin/quickqr_scanner_plugin.dart';
 
 void main() {
   group('QuickQRScannerPro', () {
@@ -432,4 +432,4 @@ By contributing, you agree that your contributions will be licensed under the sa
 
 ---
 
-Thank you for contributing to QuickQR Scanner Pro! 🙏
+Thank you for contributing to QuickQR Scanner Plugin! 🙏

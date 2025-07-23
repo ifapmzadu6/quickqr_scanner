@@ -22,6 +22,18 @@ public class QuickqrScannerPlugin: NSObject, FlutterPlugin {
     private let detectionCooldown: TimeInterval = 1.0
     private let visionQueue = DispatchQueue(label: "com.quickqr.vision", qos: .userInitiated)
     
+    // シングルトンインスタンス（セッション共有用）
+    static var sharedInstance: QuickqrScannerPlugin?
+    
+    // セッション共有用のメソッド
+    public func getSharedCaptureSession() -> AVCaptureSession? {
+        return captureSession
+    }
+    
+    public func addPreviewLayer(_ previewLayer: AVCaptureVideoPreviewLayer) {
+        // プレビューレイヤーの追加（必要に応じて実装）
+    }
+    
     // MARK: - Flutter Plugin Registration
     public static func register(with registrar: FlutterPluginRegistrar) {
         // Method Channel
@@ -34,7 +46,14 @@ public class QuickqrScannerPlugin: NSObject, FlutterPlugin {
         let eventChannel = FlutterEventChannel(name: "quickqr_scanner/events", binaryMessenger: registrar.messenger())
         eventChannel.setStreamHandler(instance)
         
-        os_log("✅ QuickQR Scanner Plugin registered", log: OSLog.default, type: .info)
+        // シングルトンインスタンス設定（PlatformViewでのセッション共有用）
+        QuickqrScannerPlugin.sharedInstance = instance
+        
+        // PlatformView Factory Registration
+        let factory = QuickQRCameraViewFactory(messenger: registrar.messenger())
+        registrar.register(factory, withId: "quickqr_scanner_camera_view")
+        
+        os_log("✅ QuickQR Scanner Plugin registered with shared session", log: OSLog.default, type: .info)
     }
     
     // MARK: - FlutterPlugin Implementation
@@ -228,16 +247,24 @@ public class QuickqrScannerPlugin: NSObject, FlutterPlugin {
     // MARK: - Scanning Control
     private func startScanning(result: @escaping FlutterResult) {
         guard let session = captureSession, !isScanning else {
+            print("❌ Cannot start scanning: session=\(captureSession != nil), isScanning=\(isScanning)")
             result(FlutterError(code: "NOT_INITIALIZED", message: "Scanner not initialized or already running", details: nil))
             return
         }
+        
+        print("🔄 Starting QR scanning session...")
         
         visionQueue.async {
             session.startRunning()
             self.isScanning = true
             
+            print("✅ QR scanning session started successfully")
+            print("🎥 Session running: \(session.isRunning)")
+            print("📷 Video output connected: \(self.videoOutput != nil)")
+            print("📡 Event sink available: \(self.eventSink != nil)")
+            
             DispatchQueue.main.async {
-                result(["success": true, "message": "Scanning started"])
+                result(["success": true, "message": "Scanning started with shared session"])
             }
         }
     }
@@ -368,23 +395,45 @@ public class QuickqrScannerPlugin: NSObject, FlutterPlugin {
 @available(iOS 12.0, *)
 extension QuickqrScannerPlugin: AVCaptureVideoDataOutputSampleBufferDelegate {
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        guard isScanning,
-              let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
-              Date().timeIntervalSince(lastDetectionTime) > detectionCooldown else {
+        guard isScanning else {
+            // スキャン停止状態
+            return
+        }
+        
+        guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
+        }
+        
+        guard Date().timeIntervalSince(lastDetectionTime) > detectionCooldown else {
+            // クールダウン中
             return
         }
         
         let request = VNDetectBarcodesRequest { [weak self] request, error in
-            guard let self = self,
-                  let results = request.results as? [VNBarcodeObservation],
-                  !results.isEmpty else {
+            guard let self = self else { return }
+            
+            if let error = error {
+                print("❌ Vision request error: \(error)")
                 return
             }
             
+            guard let results = request.results as? [VNBarcodeObservation],
+                  !results.isEmpty else {
+                // QRコードが見つからない（正常）
+                return
+            }
+            
+            print("🔍 Found \(results.count) barcode(s)")
+            
             for observation in results {
                 guard let payloadString = observation.payloadStringValue,
-                      !payloadString.isEmpty,
-                      payloadString != self.lastDetectedQR else {
+                      !payloadString.isEmpty else {
+                    print("⚠️ Empty barcode payload")
+                    continue
+                }
+                
+                guard payloadString != self.lastDetectedQR else {
+                    // 重複検出を防ぐ
                     continue
                 }
                 
@@ -399,8 +448,16 @@ extension QuickqrScannerPlugin: AVCaptureVideoDataOutputSampleBufferDelegate {
                     "confidence": observation.confidence
                 ]
                 
+                print("🎯 QR Code detected: \(payloadString)")
+                print("📡 Sending via EventChannel: \(scanResult)")
+                
                 DispatchQueue.main.async {
-                    self.eventSink?(scanResult)
+                    if let eventSink = self.eventSink {
+                        eventSink(scanResult)
+                        print("✅ QR Result sent to Flutter")
+                    } else {
+                        print("❌ EventSink is nil - cannot send result")
+                    }
                 }
                 
                 break
@@ -410,7 +467,11 @@ extension QuickqrScannerPlugin: AVCaptureVideoDataOutputSampleBufferDelegate {
         request.symbologies = [.qr, .code128, .code39, .code93, .ean8, .ean13, .upce]
         
         let handler = VNImageRequestHandler(cvPixelBuffer: imageBuffer, options: [:])
-        try? handler.perform([request])
+        do {
+            try handler.perform([request])
+        } catch {
+            print("❌ Failed to perform vision request: \(error)")
+        }
     }
 }
 
@@ -425,5 +486,167 @@ extension QuickqrScannerPlugin: FlutterStreamHandler {
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         self.eventSink = nil
         return nil
+    }
+}
+
+// MARK: - Platform View Factory
+@available(iOS 12.0, *)
+class QuickQRCameraViewFactory: NSObject, FlutterPlatformViewFactory {
+    private var messenger: FlutterBinaryMessenger
+
+    init(messenger: FlutterBinaryMessenger) {
+        self.messenger = messenger
+        super.init()
+    }
+
+    func create(
+        withFrame frame: CGRect,
+        viewIdentifier viewId: Int64,
+        arguments args: Any?
+    ) -> FlutterPlatformView {
+        return QuickQRCameraView(
+            frame: frame,
+            viewIdentifier: viewId,
+            arguments: args,
+            binaryMessenger: messenger)
+    }
+    
+    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
+        return FlutterStandardMessageCodec.sharedInstance()
+    }
+}
+
+// MARK: - Platform View Implementation
+@available(iOS 12.0, *)
+class QuickQRCameraView: NSObject, FlutterPlatformView {
+    private var _view: UIView
+    private var previewLayer: AVCaptureVideoPreviewLayer?
+    private var captureSession: AVCaptureSession?
+    
+    init(
+        frame: CGRect,
+        viewIdentifier viewId: Int64,
+        arguments args: Any?,
+        binaryMessenger messenger: FlutterBinaryMessenger?
+    ) {
+        // Flutter creationParams からサイズ情報を取得
+        var actualFrame = frame
+        
+        if let argsDict = args as? [String: Any] {
+            let width = argsDict["width"] as? Double ?? Double(frame.width)
+            let height = argsDict["height"] as? Double ?? Double(frame.height)
+            
+            // 適切なサイズでフレームを作成（アニメーション回避）
+            actualFrame = CGRect(x: 0, y: 0, width: width, height: height)
+            
+            print("📐 Using Flutter provided size: \(width)x\(height)")
+            print("🔧 Original frame was: \(frame)")
+        } else {
+            print("⚠️ No creation params provided, using default frame: \(frame)")
+        }
+        
+        // カスタムUIView使用でフレーム変更監視
+        let cameraView = CameraPreviewView(frame: actualFrame)
+        cameraView.backgroundColor = UIColor.black
+        _view = cameraView
+        super.init()
+        
+        // フレーム変更時のコールバック設定
+        cameraView.onBoundsChanged = { [weak self] newBounds in
+            DispatchQueue.main.async {
+                self?.previewLayer?.frame = newBounds
+                print("📐 Camera preview frame updated: \(newBounds)")
+            }
+        }
+        
+        // カメラプレビューセットアップ
+        setupCameraPreview()
+        print("🎥 QuickQRCameraView initialized with corrected frame: \(actualFrame)")
+    }
+
+    func view() -> UIView {
+        return _view
+    }
+    
+    private func setupCameraPreview() {
+        guard AVCaptureDevice.authorizationStatus(for: .video) == .authorized else {
+            print("❌ Camera permission not granted")
+            return
+        }
+        
+        // 共有セッションを使用（独自セッション作成を避ける）
+        guard let sharedPlugin = QuickqrScannerPlugin.sharedInstance else {
+            print("❌ Shared plugin instance not available")
+            return
+        }
+        
+        // 少し遅延させてメインプラグインの初期化完了を待つ
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            guard let sharedSession = sharedPlugin.getSharedCaptureSession() else {
+                print("⏳ Shared capture session not ready yet, will retry")
+                // 再試行
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.setupCameraPreview()
+                }
+                return
+            }
+            
+            // 共有セッションを使用してプレビューレイヤーを作成
+            let previewLayer = AVCaptureVideoPreviewLayer(session: sharedSession)
+            
+            // フレーム設定（確実なサイズ取得）
+            let currentBounds = self._view.bounds
+            print("📏 Setting preview layer frame: \(currentBounds)")
+            
+            previewLayer.frame = currentBounds
+            previewLayer.videoGravity = .resizeAspectFill
+            
+            // レイヤーを追加
+            self._view.layer.addSublayer(previewLayer)
+            
+            self.previewLayer = previewLayer
+            self.captureSession = sharedSession // 参照のみ保持
+            
+            print("✅ Camera preview connected to shared session with frame: \(currentBounds)")
+            
+            // フレーム更新は必要に応じて（一般的には不要）
+            if currentBounds.width == 0 || currentBounds.height == 0 {
+                print("⚠️ View bounds are zero, will retry frame setting")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    if self._view.bounds.width > 0 && self._view.bounds.height > 0 {
+                        previewLayer.frame = self._view.bounds
+                        print("🔄 Updated preview layer frame to: \(self._view.bounds)")
+                    }
+                }
+            }
+        }
+    }
+    
+    // カスタムUIViewでレイアウト変更を監視
+    private class CameraPreviewView: UIView {
+        var onBoundsChanged: ((CGRect) -> Void)?
+        
+        override var bounds: CGRect {
+            didSet {
+                if bounds != oldValue {
+                    onBoundsChanged?(bounds)
+                }
+            }
+        }
+        
+        override var frame: CGRect {
+            didSet {
+                if frame != oldValue {
+                    onBoundsChanged?(bounds)
+                }
+            }
+        }
+    }
+    
+    deinit {
+        // 共有セッションなので、PlatformViewからは停止しない
+        // プレビューレイヤーのみ削除
+        previewLayer?.removeFromSuperlayer()
+        print("🗑️ QuickQRCameraView disposed (shared session preserved)")
     }
 }

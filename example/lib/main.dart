@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:quickqr_scanner/quickqr_scanner.dart';
+import 'package:quickqr_scanner_plugin/quickqr_scanner_plugin.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,12 +32,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _scanner = QuickQRScanner.instance;
+  final _scanner = QuickqrScannerPlugin();
   
   // State variables
   bool _isInitialized = false;
   bool _isScanning = false;
-  String _status = 'タップしてスキャナーを初期化';
+  String _status = 'Tap to initialize scanner';
   List<QRScanResult> _scanResults = [];
   StreamSubscription<QRScanResult>? _scanSubscription;
   Map<String, dynamic>? _deviceInfo;
@@ -63,12 +62,12 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _deviceInfo = availability;
         _status = availability['isAvailable'] == true 
-          ? 'デバイス対応確認済み - 初期化してください' 
-          : 'このデバイスはQRスキャンに対応していません';
+          ? 'Device compatible - please initialize' 
+          : 'This device does not support QR scanning';
       });
     } catch (e) {
       setState(() {
-        _status = 'デバイス確認エラー: $e';
+        _status = 'Device check error: $e';
       });
     }
   }
@@ -78,7 +77,7 @@ class _HomePageState extends State<HomePage> {
     if (_isInitialized) return;
     
     setState(() {
-      _status = 'カメラ権限を確認中...';
+      _status = 'Checking camera permissions...';
     });
 
     try {
@@ -86,28 +85,28 @@ class _HomePageState extends State<HomePage> {
       final permissions = await _scanner.checkPermissions();
       if (permissions['status'] != 'granted') {
         setState(() {
-          _status = '権限が必要です - 設定から許可してください';
+          _status = 'Permission required - please allow in settings';
         });
         return;
       }
 
       // Initialize scanner
       setState(() {
-        _status = 'スキャナーを初期化中...';
+        _status = 'Initializing scanner...';
       });
       
       final result = await _scanner.initialize();
       
       setState(() {
         _isInitialized = true;
-        _status = '初期化完了 - スキャンを開始できます';
+        _status = 'Initialization complete - ready to scan';
       });
 
-      print('Scanner initialized: $result');
+      debugPrint('Scanner initialized: $result');
 
     } catch (e) {
       setState(() {
-        _status = '初期化エラー: $e';
+        _status = 'Initialization error: $e';
       });
     }
   }
@@ -118,7 +117,7 @@ class _HomePageState extends State<HomePage> {
 
     try {
       setState(() {
-        _status = 'スキャン開始中...';
+        _status = 'Starting scan...';
       });
 
       // Listen to scan results
@@ -133,7 +132,7 @@ class _HomePageState extends State<HomePage> {
         },
         onError: (error) {
           setState(() {
-            _status = 'スキャンエラー: $error';
+            _status = 'Scan error: $error';
           });
         },
       );
@@ -142,12 +141,12 @@ class _HomePageState extends State<HomePage> {
       
       setState(() {
         _isScanning = true;
-        _status = 'スキャン中 - QRコードをカメラに向けてください';
+        _status = 'Scanning - point camera at QR code';
       });
 
     } catch (e) {
       setState(() {
-        _status = 'スキャン開始エラー: $e';
+        _status = 'Scan start error: $e';
       });
     }
   }
@@ -163,12 +162,12 @@ class _HomePageState extends State<HomePage> {
       
       setState(() {
         _isScanning = false;
-        _status = 'スキャン停止 - 再開可能';
+        _status = 'Scan stopped - can resume';
       });
 
     } catch (e) {
       setState(() {
-        _status = 'スキャン停止エラー: $e';
+        _status = 'Scan stop error: $e';
       });
     }
   }
@@ -179,13 +178,17 @@ class _HomePageState extends State<HomePage> {
     
     try {
       final result = await _scanner.toggleFlashlight();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('フラッシュライト: ${result['message']}')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Flashlight: ${result['message']}')),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('フラッシュライトエラー: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Flashlight error: $e')),
+        );
+      }
     }
   }
 
@@ -207,12 +210,12 @@ class _HomePageState extends State<HomePage> {
             IconButton(
               icon: const Icon(Icons.flash_on),
               onPressed: _toggleFlashlight,
-              tooltip: 'フラッシュライト切替',
+              tooltip: 'Toggle flashlight',
             ),
           IconButton(
             icon: const Icon(Icons.clear_all),
             onPressed: _scanResults.isNotEmpty ? _clearResults : null,
-            tooltip: '結果をクリア',
+            tooltip: 'Clear results',
           ),
         ],
       ),
@@ -229,7 +232,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'ステータス',
+                      'Status',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -245,14 +248,14 @@ class _HomePageState extends State<HomePage> {
                     if (_deviceInfo != null) ...[
                       const SizedBox(height: 12),
                       Text(
-                        'デバイス情報',
+                        'Device Info',
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '対応: ${_deviceInfo!['isSupported']}\n'
-                        'カメラ: ${_deviceInfo!['isAvailable']}\n'
-                        'フレームワーク: ${_deviceInfo!['deviceInfo']?['framework'] ?? 'Unknown'}',
+                        'Supported: ${_deviceInfo!['isSupported']}\n'
+                        'Camera: ${_deviceInfo!['isAvailable']}\n'
+                        'Framework: ${_deviceInfo!['deviceInfo']?['framework'] ?? 'Unknown'}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
@@ -270,7 +273,7 @@ class _HomePageState extends State<HomePage> {
                   child: ElevatedButton.icon(
                     onPressed: !_isInitialized ? _initializeScanner : null,
                     icon: const Icon(Icons.power_settings_new),
-                    label: const Text('初期化'),
+                    label: const Text('Initialize'),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -278,7 +281,7 @@ class _HomePageState extends State<HomePage> {
                   child: ElevatedButton.icon(
                     onPressed: _isInitialized && !_isScanning ? _startScanning : null,
                     icon: const Icon(Icons.qr_code_scanner),
-                    label: const Text('スキャン開始'),
+                    label: const Text('Start Scan'),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -286,7 +289,7 @@ class _HomePageState extends State<HomePage> {
                   child: ElevatedButton.icon(
                     onPressed: _isScanning ? _stopScanning : null,
                     icon: const Icon(Icons.stop),
-                    label: const Text('停止'),
+                    label: const Text('Stop'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red.shade100,
                     ),
@@ -299,7 +302,7 @@ class _HomePageState extends State<HomePage> {
             
             // Scan results
             Text(
-              'スキャン結果 (${_scanResults.length})',
+              'Scan Results (${_scanResults.length})',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -320,7 +323,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'QRコードをスキャンしてください',
+                              'Please scan a QR code',
                               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 color: Colors.grey.shade600,
                               ),
@@ -347,8 +350,8 @@ class _HomePageState extends State<HomePage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           subtitle: Text(
-                            'フォーマット: ${result.format.toUpperCase()}\n'
-                            '時間: ${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}:'
+                            'Format: ${result.format.value.toUpperCase()}\n'
+                            'Time: ${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}:'
                             '${timestamp.second.toString().padLeft(2, '0')}',
                           ),
                           trailing: IconButton(
@@ -357,7 +360,7 @@ class _HomePageState extends State<HomePage> {
                               Clipboard.setData(ClipboardData(text: result.content));
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('クリップボードにコピーしました'),
+                                  content: Text('Copied to clipboard'),
                                   duration: Duration(seconds: 2),
                                 ),
                               );

@@ -1,29 +1,30 @@
 name: quickqr_scanner_plugin
-description: "High-performance QR scanner with VisionKit integration and image processing capabilities."
-version: 0.1.0
+description: "Enterprise-grade QR code scanner with Vision framework integration for iOS and ML Kit for Android. High-performance, low-latency scanning with comprehensive error handling."
+version: 1.0.2
 homepage: https://github.com/ifapmzadu6/quickqr_scanner_plugin
 repository: https://github.com/ifapmzadu6/quickqr_scanner_plugin
 issue_tracker: https://github.com/ifapmzadu6/quickqr_scanner_plugin/issues
+documentation: https://github.com/ifapmzadu6/quickqr_scanner_plugin/wiki
 topics:
   - qr-code
   - barcode
   - scanner
-  - vision-kit
-  - camera
+  - vision
+  - mlkit
 
 environment:
-  sdk: ^3.8.1
-  flutter: '>=3.3.0'
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: '>=3.16.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  plugin_platform_interface: ^2.0.2
+  plugin_platform_interface: ^2.1.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   plugin:

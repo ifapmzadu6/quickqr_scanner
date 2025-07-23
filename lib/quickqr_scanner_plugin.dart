@@ -1,28 +1,32 @@
-/// High-performance QR scanner with VisionKit integration
+/// High-performance QR scanner with Vision framework integration for iOS and ML Kit for Android
 /// 
-/// This plugin provides:
-/// - Real-time QR code scanning using device camera
-/// - Image-based QR code scanning from files  
-/// - VisionKit integration for iOS (high performance)
-/// - Comprehensive error handling
+/// This plugin provides enterprise-grade QR code scanning with:
+library quickqr_scanner_plugin;
+/// - Real-time QR code scanning using device camera with native performance
+/// - Image-based QR code scanning from files without picker dependency
+/// - Vision framework integration for iOS (hardware acceleration on supported devices)
+/// - ML Kit integration for Android (Google ML optimization)
+/// - Platform Views for seamless Flutter integration
+/// - Comprehensive error handling and resource management
 /// 
 /// Usage:
 /// ```dart
-/// import 'package:quickqr_scanner/quickqr_scanner.dart';
+/// import 'package:quickqr_scanner_plugin/quickqr_scanner_plugin.dart';
 /// 
 /// // Initialize scanner
-/// await QuickQRScanner.instance.initialize();
+/// final scanner = QuickqrScannerPlugin();
+/// await scanner.initialize();
 /// 
 /// // Listen to scan results
-/// QuickQRScanner.instance.onQRDetected.listen((result) {
+/// scanner.onQRDetected.listen((result) {
 ///   print('QR Code: ${result.content}');
 /// });
 /// 
 /// // Start scanning
-/// await QuickQRScanner.instance.startScanning();
+/// await scanner.startScanning();
 /// 
 /// // Scan from image  
-/// final result = await QuickQRScanner.instance.scanFromImage('/path/to/image.jpg');
+/// final result = await scanner.scanFromImage('/path/to/image.jpg');
 /// ```
 
 import 'dart:async';
@@ -36,16 +40,12 @@ export 'src/models/qr_scan_config.dart';
 export 'src/models/scanner_exception.dart';
 
 /// The main plugin class for QR scanning functionality
-class QuickQRScanner {
-  /// The singleton instance
-  static QuickQRScanner? _instance;
-  
-  /// Get the singleton instance
-  static QuickQRScanner get instance {
-    return _instance ??= QuickQRScanner._();
-  }
-  
-  QuickQRScanner._();
+/// 
+/// This class provides methods for QR code scanning using native platform
+/// implementations with VisionKit on iOS and ML Kit on Android.
+class QuickqrScannerPlugin {
+  /// Creates a new instance of the scanner plugin
+  QuickqrScannerPlugin();
 
   /// Stream for receiving QR scan results
   Stream<QRScanResult> get onQRDetected {

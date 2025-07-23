@@ -11,6 +11,7 @@ import android.media.ImageReader
 import android.os.Build
 import android.util.Log
 import android.util.Size
+import android.view.TextureView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.barcode.BarcodeScanner
@@ -24,6 +25,9 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.platform.PlatformView
+import io.flutter.plugin.platform.PlatformViewFactory
+import io.flutter.plugin.common.StandardMessageCodec
 import java.io.File
 
 /** QuickQR Scanner Plugin - ML Kit Integration */
@@ -60,6 +64,12 @@ class QuickqrScannerPlugin: FlutterPlugin, MethodCallHandler, EventChannel.Strea
         
         eventChannel = EventChannel(flutterPluginBinding.binaryMessenger, EVENT_CHANNEL)
         eventChannel.setStreamHandler(this)
+        
+        // PlatformView Factory Registration
+        flutterPluginBinding.platformViewRegistry.registerViewFactory(
+            "quickqr_scanner_camera_view",
+            QuickQRCameraViewFactory(flutterPluginBinding.binaryMessenger)
+        )
         
         initializeMLKit()
         
@@ -329,5 +339,89 @@ class QuickqrScannerPlugin: FlutterPlugin, MethodCallHandler, EventChannel.Strea
         } catch (e: Exception) {
             Log.w(TAG, "Error disposing camera session", e)
         }
+    }
+}
+
+// MARK: - Platform View Factory
+class QuickQRCameraViewFactory(private val messenger: io.flutter.plugin.common.BinaryMessenger) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
+    override fun create(context: Context?, viewId: Int, args: Any?): PlatformView {
+        return QuickQRCameraView(context!!, viewId, args)
+    }
+}
+
+// MARK: - Platform View Implementation
+class QuickQRCameraView(context: Context, id: Int, creationParams: Any?) : PlatformView {
+    private val view: android.view.View
+    private val textureView: android.view.TextureView?
+    
+    init {
+        // Flutter creationParams からサイズ情報を取得
+        var targetWidth = 0
+        var targetHeight = 0
+        
+        if (creationParams is Map<*, *>) {
+            try {
+                val params = creationParams as Map<String, Any>
+                targetWidth = (params["width"] as? Number)?.toInt() ?: 0
+                targetHeight = (params["height"] as? Number)?.toInt() ?: 0
+                
+                Log.i("QuickQRCameraView", "📐 Using Flutter provided size: ${targetWidth}x${targetHeight}")
+            } catch (e: Exception) {
+                Log.w("QuickQRCameraView", "⚠️ Error parsing creation params: $e")
+            }
+        } else {
+            Log.w("QuickQRCameraView", "⚠️ No creation params provided")
+        }
+        
+        // カメラ権限チェック
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            // TextureViewでカメラプレビュー実装
+            textureView = android.view.TextureView(context).apply {
+                // サイズが指定されている場合は適用
+                if (targetWidth > 0 && targetHeight > 0) {
+                    layoutParams = android.view.ViewGroup.LayoutParams(targetWidth, targetHeight)
+                    Log.i("QuickQRCameraView", "🔧 Set TextureView size: ${targetWidth}x${targetHeight}")
+                }
+                
+                surfaceTextureListener = object : android.view.TextureView.SurfaceTextureListener {
+                    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+                        Log.i("QuickQRCameraView", "✅ Surface texture available: ${width}x${height}")
+                        // 実際のカメラセットアップは将来実装
+                    }
+                    
+                    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
+                        Log.i("QuickQRCameraView", "📐 Surface texture size changed: ${width}x${height}")
+                    }
+                    
+                    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean = true
+                    override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
+                }
+            }
+            view = textureView!!
+        } else {
+            // 権限がない場合は基本View
+            textureView = null
+            view = android.view.View(context).apply {
+                setBackgroundColor(android.graphics.Color.BLACK)
+                
+                // サイズが指定されている場合は適用
+                if (targetWidth > 0 && targetHeight > 0) {
+                    layoutParams = android.view.ViewGroup.LayoutParams(targetWidth, targetHeight)
+                    Log.i("QuickQRCameraView", "🔧 Set View size: ${targetWidth}x${targetHeight}")
+                }
+            }
+            Log.w("QuickQRCameraView", "⚠️ Camera permission not granted")
+        }
+        
+        Log.i("QuickQRCameraView", "📱 Android Camera view created with ID: $id, size: ${targetWidth}x${targetHeight}")
+    }
+    
+    override fun getView(): android.view.View {
+        return view
+    }
+    
+    override fun dispose() {
+        Log.i("QuickQRCameraView", "📱 Android Camera view disposed")
+        // TextureViewのクリーンアップ
     }
 }

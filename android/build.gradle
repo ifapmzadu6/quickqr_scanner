@@ -48,8 +48,8 @@ android {
     }
 
     dependencies {
-        // Flutter - standard plugin dependency
-        compileOnly 'io.flutter:flutter_embedding_android:+'
+        // Flutter framework is provided by the host application
+        // No need to explicitly declare flutter_embedding_android
         
         // ML Kit for barcode scanning
         implementation 'com.google.mlkit:barcode-scanning:17.2.0'

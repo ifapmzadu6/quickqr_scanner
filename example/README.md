@@ -76,8 +76,8 @@ Future<void> _checkDeviceCapabilities() async {
   setState(() {
     _deviceInfo = availability;
     _status = availability['isAvailable'] == true 
-      ? 'デバイス対応確認済み - 初期化してください' 
-      : 'このデバイスはQRスキャンに対応していません';
+      ? 'Device compatible - please initialize' 
+      : 'This device does not support QR scanning';
   });
 }
 ```
@@ -88,7 +88,7 @@ Future<void> _initializeScanner() async {
   final permissions = await scanner.checkPermissions();
   if (permissions['status'] != 'granted') {
     setState(() {
-      _status = '権限が必要です - 設定から許可してください';
+      _status = 'Permission required - please allow in settings';
     });
     return;
   }
@@ -116,11 +116,11 @@ try {
   await _scanner.startScanning();
   setState(() {
     _isScanning = true;
-    _status = 'スキャン中 - QRコードをカメラに向けてください';
+    _status = 'Scanning - point camera at QR code';
   });
 } catch (e) {
   setState(() {
-    _status = 'スキャン開始エラー: $e';
+    _status = 'Scan start error: $e';
   });
 }
 ```

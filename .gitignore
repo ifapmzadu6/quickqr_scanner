@@ -37,4 +37,50 @@ example/android/gradle.properties
 
 # macOS
 .DS_Store
+
+# Documentation
+CLAUDE.md
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.staging
+
+# Coverage reports
+coverage/
+lcov.info
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+
+# iOS specific
+ios/Pods/
+ios/Runner.xcworkspace/xcuserdata/
+ios/Runner.xcodeproj/xcuserdata/
+ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+
+# Android specific
+android/key.properties
+android/app/google-services.json
+android/app/src/main/res/values/google_services_strings.xml
+*.jks
+*.keystore
+
+# VS Code
+.vscode/settings.json
+.vscode/launch.json
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
 EOF < /dev/null

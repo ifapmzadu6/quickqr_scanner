@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-Common issues and solutions for QuickQR Scanner Pro Flutter plugin.
+Common issues and solutions for QuickQR Scanner Plugin Flutter plugin.
 
 ## 📋 Table of Contents
 
@@ -17,13 +17,13 @@ Common issues and solutions for QuickQR Scanner Pro Flutter plugin.
 
 ### Plugin Not Found
 
-**Problem**: `Package quickqr_scanner_pro was not found`
+**Problem**: `Package quickqr_scanner_plugin was not found`
 
 **Solutions**:
 1. Check `pubspec.yaml` syntax:
    ```yaml
    dependencies:
-     quickqr_scanner_pro: ^0.1.0
+     quickqr_scanner_plugin: ^1.0.0
    ```
 
 2. Run dependency installation:
@@ -664,7 +664,7 @@ class DebugQRScanner extends StatefulWidget {
 }
 
 class _DebugQRScannerState extends State<DebugQRScanner> {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   
   @override
   void initState() {
@@ -721,7 +721,7 @@ If you're still experiencing issues:
    - [EXAMPLES.md](EXAMPLES.md) - Code examples and patterns
 
 2. **Search Existing Issues**:
-   - [GitHub Issues](https://github.com/quickqr/quickqr_scanner_pro/issues)
+   - [GitHub Issues](https://github.com/ifapmzadu6/quickqr_scanner_plugin/issues)
    - Check closed issues for solutions
 
 3. **Create New Issue**:
@@ -731,11 +731,11 @@ If you're still experiencing issues:
    - Specify device and OS versions
 
 4. **Community Support**:
-   - [GitHub Discussions](https://github.com/quickqr/quickqr_scanner_pro/discussions)
-   - Stack Overflow with tag `quickqr-scanner-pro`
+   - [GitHub Discussions](https://github.com/ifapmzadu6/quickqr_scanner_plugin/discussions)
+   - Stack Overflow with tag `quickqr-scanner-plugin`
 
 5. **Professional Support**:
-   - Email: quickqr.scanner.pro@gmail.com
+   - Email: quickqr.scanner.plugin@gmail.com
    - Include detailed error logs and device information
 
 ## 🔧 Self-Diagnostic Checklist

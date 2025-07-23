@@ -1,42 +1,42 @@
 # API Reference
 
-Comprehensive API documentation for QuickQR Scanner Pro Flutter plugin.
+Comprehensive API documentation for QuickQR Scanner Plugin Flutter plugin.
 
 ## Table of Contents
 
-- [QuickQRScannerPro](#quickqrscanneripro)
+- [QuickqrScannerPlugin](#quickqrscanneriplugin)
 - [Data Models](#data-models)
 - [Platform Interfaces](#platform-interfaces)
 - [Exceptions](#exceptions)
 - [Usage Patterns](#usage-patterns)
 
-## QuickQRScannerPro
+## QuickqrScannerPlugin
 
 Main plugin class providing QR and barcode scanning functionality.
 
 ### Constructor
 
 ```dart
-QuickQRScannerPro._()
+QuickqrScannerPlugin()
 ```
 
-Private constructor. Use `QuickQRScannerPro.instance` to access the singleton.
+Constructor for creating a new plugin instance.
 
 ### Properties
 
 #### `static instance`
 
 ```dart
-static QuickQRScannerPro get instance
+Constructor
 ```
 
 Gets the singleton instance of the scanner.
 
-**Returns:** `QuickQRScannerPro` - The singleton instance
+**Returns:** `QuickqrScannerPlugin` - A new plugin instance
 
 **Example:**
 ```dart
-final scanner = QuickQRScannerPro.instance;
+final scanner = QuickqrScannerPlugin();
 ```
 
 #### `onQRDetected`
@@ -45,17 +45,101 @@ final scanner = QuickQRScannerPro.instance;
 Stream<QRScanResult> get onQRDetected
 ```
 
-Stream for receiving QR scan results in real-time.
+**Broadcast Stream** for receiving QR scan results in real-time during active scanning sessions.
 
-**Returns:** `Stream<QRScanResult>` - Stream of scan results
+**Stream Behavior:**
+- Emits `QRScanResult` objects when QR codes are successfully detected
+- Only active during `startScanning()` → `stopScanning()` sessions
+- Automatically filters duplicate detections within 1-second intervals
+- Handles detection errors gracefully with detailed error information
 
-**Example:**
+**Returns:** `Stream<QRScanResult>` - Broadcast stream of scan results
+
+**Key Features:**
+- **Real-time detection**: Sub-second scanning performance
+- **Error resilience**: Continues streaming even after individual scan errors
+- **Memory efficient**: Automatic cleanup when scanner is disposed
+- **Thread safe**: Safe to subscribe from multiple listeners
+
+**Important Notes:**
+⚠️ **Always cancel subscriptions** in `dispose()` to prevent memory leaks
+⚠️ **Stream is only active** when scanner is initialized and scanning
+⚠️ **Multiple listeners supported** - use broadcast stream pattern
+
+**Basic Example:**
 ```dart
+StreamSubscription<QRScanResult>? _subscription;
+
+void _startListening() {
+  _subscription = scanner.onQRDetected.listen(
+    (result) {
+      print('QR Content: ${result.content}');
+      print('Format: ${result.format.value}');
+      print('Confidence: ${result.confidence}');
+      print('Timestamp: ${DateTime.fromMillisecondsSinceEpoch(result.timestamp)}');
+    },
+    onError: (error) {
+      print('Scan error: $error');
+    },
+    cancelOnError: false, // Continue listening after errors
+  );
+}
+
+void _stopListening() {
+  _subscription?.cancel();
+  _subscription = null;
+}
+```
+
+**Advanced Usage with Error Handling:**
+```dart
+scanner.onQRDetected.listen(
+  (result) {
+    // Handle successful scan
+    handleQRCode(result);
+  },
+  onError: (error) {
+    if (error is ScannerException) {
+      switch (error.code) {
+        case ScannerErrorCode.cameraError:
+          showCameraErrorDialog();
+          break;
+        case ScannerErrorCode.scanTimeout:
+          // Continue scanning, just a timeout
+          break;
+        default:
+          print('Scanner error: ${error.message}');
+      }
+    }
+  },
+);
+```
+
+**Multiple Listeners Example:**
+```dart
+// UI updates
 scanner.onQRDetected.listen((result) {
-  print('QR Content: ${result.content}');
-  print('Format: ${result.format}');
-  print('Confidence: ${result.confidence}');
+  setState(() {
+    _lastResult = result;
+  });
 });
+
+// Analytics tracking
+scanner.onQRDetected.listen((result) {
+  analytics.track('qr_scanned', {
+    'format': result.format.value,
+    'content_type': result.contentType,
+  });
+});
+
+// Auto-action handling
+scanner.onQRDetected
+  .where((result) => result.format == BarcodeFormat.qr)
+  .listen((result) {
+    if (isUrl(result.content)) {
+      launchUrl(result.content);
+    }
+  });
 ```
 
 ### Methods
@@ -400,12 +484,12 @@ class ScannerException implements Exception {
 
 ## Platform Interfaces
 
-### QuickqrScannerProPlatform
+### QuickqrScannerPlatform
 
 Abstract base class for platform implementations.
 
 ```dart
-abstract class QuickqrScannerProPlatform extends PlatformInterface
+abstract class QuickqrScannerPlatform extends PlatformInterface
 ```
 
 #### Methods
@@ -423,12 +507,12 @@ All methods are abstract and implemented by platform-specific classes:
 - `Future<Map<String, dynamic>> toggleFlashlight()`
 - `Future<QRScanResult?> scanFromImage(String imagePath)`
 
-### MethodChannelQuickqrScannerPro
+### MethodChannelQuickqrScanner
 
 Default implementation using Flutter method channels.
 
 ```dart
-class MethodChannelQuickqrScannerPro extends QuickqrScannerProPlatform
+class MethodChannelQuickqrScanner extends QuickqrScannerPlatform
 ```
 
 #### Channel Names
@@ -442,7 +526,7 @@ class MethodChannelQuickqrScannerPro extends QuickqrScannerProPlatform
 
 ```dart
 class ScannerService {
-  final _scanner = QuickQRScannerPro.instance;
+  final _scanner = QuickqrScannerPlugin();
   StreamSubscription<QRScanResult>? _subscription;
 
   Future<void> initialize() async {
