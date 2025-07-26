@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'quickqr_scanner_plugin'
-  s.version          = '1.0.0'
+  s.version          = '1.1.0'
   s.summary          = 'High-performance QR scanner with VisionKit integration'
   s.description      = <<-DESC
 QuickQR Scanner Plugin provides high-performance QR code scanning with VisionKit integration and advanced image processing capabilities.

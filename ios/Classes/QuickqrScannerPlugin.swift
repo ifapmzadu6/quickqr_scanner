@@ -840,7 +840,7 @@ extension QuickqrScannerPlugin {
             
             // For infinity focus, set to maximum focus distance
             if focusModeString == "infinity" {
-                device.setFocusModeLockedWithLensPosition(1.0, completionHandler: nil)
+                device.setFocusModeLocked(lensPosition: 1.0, completionHandler: nil)
             }
             
             device.unlockForConfiguration()
@@ -880,7 +880,7 @@ extension QuickqrScannerPlugin {
                 
                 // Set close focus distance
                 if device.isLockingFocusWithCustomLensPositionSupported {
-                    device.setFocusModeLockedWithLensPosition(0.0, completionHandler: nil)
+                    device.setFocusModeLocked(lensPosition: 0.0, completionHandler: nil)
                 }
             } else {
                 // Reset to normal auto focus
