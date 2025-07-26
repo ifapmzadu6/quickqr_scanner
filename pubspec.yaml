@@ -1,6 +1,6 @@
 name: quickqr_scanner_plugin
 description: "Enterprise-grade QR code scanner with Vision framework integration for iOS and ML Kit for Android. High-performance, low-latency scanning with comprehensive error handling."
-version: 1.0.2
+version: 1.1.0
 homepage: https://github.com/ifapmzadu6/quickqr_scanner_plugin
 repository: https://github.com/ifapmzadu6/quickqr_scanner_plugin
 issue_tracker: https://github.com/ifapmzadu6/quickqr_scanner_plugin/issues

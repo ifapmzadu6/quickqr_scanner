@@ -66,7 +66,7 @@ void main() {
       } catch (e) {
         // On test environments without camera, initialization might fail
         // This is expected behavior and should be handled gracefully
-        expect(e.toString(), contains('camera') || contains('permission') || contains('not supported'));
+        expect(e.toString(), anyOf([contains('camera'), contains('permission'), contains('not supported')]));
       }
     });
 
@@ -77,7 +77,7 @@ void main() {
         expect(flashResult.containsKey('message'), isTrue);
       } catch (e) {
         // Flashlight might not be available in test environment
-        expect(e.toString(), contains('flashlight') || contains('not supported') || contains('not available'));
+        expect(e.toString(), anyOf([contains('flashlight'), contains('not supported'), contains('not available')]));
       }
     });
 

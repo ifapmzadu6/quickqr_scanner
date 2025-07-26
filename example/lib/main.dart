@@ -41,6 +41,12 @@ class _HomePageState extends State<HomePage> {
   List<QRScanResult> _scanResults = [];
   StreamSubscription<QRScanResult>? _scanSubscription;
   Map<String, dynamic>? _deviceInfo;
+  
+  // Camera control state
+  double _currentZoom = 1.0;
+  double _maxZoom = 1.0;
+  bool _macroModeEnabled = false;
+  bool _macroModeSupported = false;
 
   @override
   void initState() {
@@ -101,6 +107,9 @@ class _HomePageState extends State<HomePage> {
         _isInitialized = true;
         _status = 'Initialization complete - ready to scan';
       });
+
+      // Get camera capabilities
+      _loadCameraCapabilities();
 
       debugPrint('Scanner initialized: $result');
 
@@ -197,6 +206,73 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _scanResults.clear();
     });
+  }
+
+  // Load camera capabilities
+  Future<void> _loadCameraCapabilities() async {
+    try {
+      final zoomCapabilities = await _scanner.getZoomCapabilities();
+      final macroState = await _scanner.getMacroModeState();
+      
+      setState(() {
+        _currentZoom = (zoomCapabilities['currentZoom'] as num?)?.toDouble() ?? 1.0;
+        _maxZoom = (zoomCapabilities['maxZoom'] as num?)?.toDouble() ?? 1.0;
+        _macroModeEnabled = macroState['enabled'] as bool? ?? false;
+        _macroModeSupported = macroState['supported'] as bool? ?? false;
+      });
+    } catch (e) {
+      debugPrint('Error loading camera capabilities: $e');
+    }
+  }
+
+  // Set zoom level
+  Future<void> _setZoomLevel(double zoom) async {
+    if (!_isInitialized) return;
+    
+    try {
+      final result = await _scanner.setZoomLevel(zoom);
+      if (result['success'] == true) {
+        setState(() {
+          _currentZoom = (result['currentZoom'] as num?)?.toDouble() ?? zoom;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error setting zoom: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Zoom error: $e')),
+        );
+      }
+    }
+  }
+
+  // Toggle macro mode
+  Future<void> _toggleMacroMode() async {
+    if (!_isInitialized || !_macroModeSupported) return;
+    
+    try {
+      final result = await _scanner.setMacroMode(!_macroModeEnabled);
+      if (result['success'] == true) {
+        setState(() {
+          _macroModeEnabled = result['enabled'] as bool? ?? !_macroModeEnabled;
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Macro mode ${_macroModeEnabled ? 'enabled' : 'disabled'}'),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error toggling macro mode: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Macro mode error: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -299,6 +375,84 @@ class _HomePageState extends State<HomePage> {
             ),
             
             const SizedBox(height: 16),
+            
+            // Camera Controls (show only when initialized)
+            if (_isInitialized) ...[
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Camera Controls',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      // Zoom control
+                      if (_maxZoom > 1.0) ...[
+                        Row(
+                          children: [
+                            const Icon(Icons.zoom_out, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Slider(
+                                value: _currentZoom,
+                                min: 1.0,
+                                max: _maxZoom,
+                                divisions: (_maxZoom * 10).round() - 10,
+                                label: '${_currentZoom.toStringAsFixed(1)}x',
+                                onChanged: _isInitialized ? _setZoomLevel : null,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.zoom_in, size: 20),
+                          ],
+                        ),
+                        Text(
+                          'Zoom: ${_currentZoom.toStringAsFixed(1)}x (max: ${_maxZoom.toStringAsFixed(1)}x)',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      
+                      // Macro mode toggle
+                      if (_macroModeSupported) ...[
+                        Row(
+                          children: [
+                            const Icon(Icons.center_focus_strong, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Macro Mode',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            const Spacer(),
+                            Switch(
+                              value: _macroModeEnabled,
+                              onChanged: _isInitialized ? (_) => _toggleMacroMode() : null,
+                            ),
+                          ],
+                        ),
+                        Text(
+                          'For scanning small QR codes up close',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                      
+                      if (!_macroModeSupported && _maxZoom <= 1.0)
+                        Text(
+                          'No advanced camera controls available on this device',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             
             // Scan results
             Text(

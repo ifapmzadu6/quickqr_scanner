@@ -1,4 +1,5 @@
 import 'qr_scan_result.dart';
+import 'camera_control_config.dart';
 
 /// Configuration for QR scanner
 /// 
@@ -26,6 +27,9 @@ class QRScanConfig {
   /// Minimum confidence threshold for detection (0.0 to 1.0)
   final double minConfidence;
   
+  /// Advanced camera control configuration
+  final CameraControlConfig? cameraControl;
+  
   /// Default configuration constants
   static const int defaultCooldown = 1000;
   static const double defaultMinConfidence = 0.5;
@@ -44,6 +48,7 @@ class QRScanConfig {
     this.enableVibration = true,
     this.enableAudio = false,
     this.minConfidence = defaultMinConfidence,
+    this.cameraControl,
   }) : assert(detectionCooldown >= 100 && detectionCooldown <= 5000, 
               'Detection cooldown must be between 100ms and 5000ms'),
        assert(minConfidence >= 0.0 && minConfidence <= 1.0,
@@ -58,6 +63,16 @@ class QRScanConfig {
       enableVibration: false,
       enableAudio: false,
       minConfidence: 0.7,
+      cameraControl: CameraControlConfig(
+        zoomLevel: 1.0,
+        enableMacroMode: false,
+        focusMode: FocusMode.auto,
+        exposureMode: ExposureMode.auto,
+        resolution: CameraResolution.low,
+        enableStabilization: false,
+        enableHDR: false,
+        preferredFrameRate: 60,
+      ),
     );
   }
   
@@ -91,6 +106,7 @@ class QRScanConfig {
       'enableVibration': enableVibration,
       'enableAudio': enableAudio,
       'minConfidence': minConfidence,
+      'cameraControl': cameraControl?.toMap(),
     };
   }
   
@@ -105,6 +121,13 @@ class QRScanConfig {
       final cooldown = map['detectionCooldown'] as int? ?? defaultCooldown;
       final minConf = (map['minConfidence'] as num?)?.toDouble() ?? defaultMinConfidence;
       
+      CameraControlConfig? cameraControl;
+      if (map['cameraControl'] != null) {
+        cameraControl = CameraControlConfig.fromMap(
+          map['cameraControl'] as Map<String, dynamic>
+        );
+      }
+      
       return QRScanConfig(
         enableFlashlight: map['enableFlashlight'] as bool? ?? false,
         formats: formatsSet.isEmpty ? defaultFormats : formatsSet,
@@ -113,6 +136,7 @@ class QRScanConfig {
         enableVibration: map['enableVibration'] as bool? ?? true,
         enableAudio: map['enableAudio'] as bool? ?? false,
         minConfidence: minConf.clamp(0.0, 1.0),
+        cameraControl: cameraControl,
       );
     } catch (e) {
       throw FormatException('Failed to parse QRScanConfig from map: $e');
@@ -128,6 +152,7 @@ class QRScanConfig {
     bool? enableVibration,
     bool? enableAudio,
     double? minConfidence,
+    CameraControlConfig? cameraControl,
   }) {
     return QRScanConfig(
       enableFlashlight: enableFlashlight ?? this.enableFlashlight,
@@ -137,6 +162,7 @@ class QRScanConfig {
       enableVibration: enableVibration ?? this.enableVibration,
       enableAudio: enableAudio ?? this.enableAudio,
       minConfidence: minConfidence ?? this.minConfidence,
+      cameraControl: cameraControl ?? this.cameraControl,
     );
   }
   
@@ -158,6 +184,11 @@ class QRScanConfig {
     
     if (enableFlashlight) {
       warnings.add('Flashlight enabled by default may drain battery faster');
+    }
+    
+    // Validate camera control configuration
+    if (cameraControl != null) {
+      warnings.addAll(cameraControl!.validate());
     }
     
     return warnings;
@@ -184,7 +215,8 @@ class QRScanConfig {
            'autoFocus: $autoFocus, '
            'enableVibration: $enableVibration, '
            'enableAudio: $enableAudio, '
-           'minConfidence: ${minConfidence.toStringAsFixed(2)}'
+           'minConfidence: ${minConfidence.toStringAsFixed(2)}, '
+           'cameraControl: $cameraControl'
            ')';
   }
   
@@ -199,7 +231,8 @@ class QRScanConfig {
         other.autoFocus == autoFocus &&
         other.enableVibration == enableVibration &&
         other.enableAudio == enableAudio &&
-        (other.minConfidence - minConfidence).abs() < 0.001;
+        (other.minConfidence - minConfidence).abs() < 0.001 &&
+        other.cameraControl == cameraControl;
   }
   
   @override
@@ -212,6 +245,7 @@ class QRScanConfig {
       enableVibration,
       enableAudio,
       minConfidence,
+      cameraControl,
     );
   }
 }

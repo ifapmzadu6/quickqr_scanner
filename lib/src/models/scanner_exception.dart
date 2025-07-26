@@ -28,6 +28,14 @@ enum ScannerErrorCode {
   invalidConfiguration('INVALID_CONFIGURATION'),
   unsupportedFormat('UNSUPPORTED_FORMAT'),
   
+  // Camera control errors
+  featureNotSupported('FEATURE_NOT_SUPPORTED'),
+  zoomNotSupported('ZOOM_NOT_SUPPORTED'),
+  focusNotSupported('FOCUS_NOT_SUPPORTED'),
+  macroNotSupported('MACRO_NOT_SUPPORTED'),
+  hdrNotSupported('HDR_NOT_SUPPORTED'),
+  stabilizationNotSupported('STABILIZATION_NOT_SUPPORTED'),
+  
   // Platform errors
   platformError('PLATFORM_ERROR'),
   methodNotImplemented('METHOD_NOT_IMPLEMENTED'),
@@ -201,6 +209,18 @@ class ScannerException implements Exception {
         return 'No QR code found. Try adjusting the camera angle or lighting.';
       case ScannerErrorCode.unsupportedFormat:
         return 'This barcode format is not supported.';
+      case ScannerErrorCode.featureNotSupported:
+        return 'This camera feature is not supported on your device.';
+      case ScannerErrorCode.zoomNotSupported:
+        return 'Camera zoom is not supported on your device.';
+      case ScannerErrorCode.focusNotSupported:
+        return 'Focus control is not supported on your device.';
+      case ScannerErrorCode.macroNotSupported:
+        return 'Macro mode is not supported on your device.';
+      case ScannerErrorCode.hdrNotSupported:
+        return 'HDR mode is not supported on your device.';
+      case ScannerErrorCode.stabilizationNotSupported:
+        return 'Image stabilization is not supported on your device.';
       default:
         return message;
     }
